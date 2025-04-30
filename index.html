@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light"> <!-- Start with light theme, JS will check localStorage -->
+<html lang="en" data-bs-theme="light"> <!-- Start with light theme -->
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Analysis AI Agent (Bootstrap RWD)</title>
+    <title>Financial Analysis AI Agent</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -18,7 +18,6 @@
             flex-direction: column;
         }
 
-        /* Custom Scrollbar (Webkit) */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -45,14 +44,12 @@
 
         /* Typing Dots Animation */
         @keyframes dots {
-
             0%,
             80%,
             100% {
                 transform: scale(0);
                 opacity: 0.5;
             }
-
             40% {
                 transform: scale(1.0);
                 opacity: 1;
@@ -81,7 +78,6 @@
             animation-delay: 0;
         }
 
-        /* RGB Glow Effect */
         @keyframes rgb-glow {
             0% {
                 box-shadow: 0 0 9px 3px #ff0080aa;
@@ -147,16 +143,11 @@
             animation: none;
             box-shadow: none;
         }
-
-        /* End Input Styling Adjustment */
-
-
-        /* Utility */
+        
         .fs-sm {
             font-size: 0.8rem;
         }
 
-        /* Chatbox */
         #chatBoxContainer {
             height: calc(100vh - 350px);
             min-height: 300px;
@@ -168,7 +159,6 @@
             scroll-behavior: smooth;
         }
 
-        /* Command Suggestions */
         #inputAreaWrapper {
             position: relative;
         }
@@ -203,8 +193,11 @@
             z-index: 2;
         }
 
+        #userInput::placeholder {
+            font-size: 0.9rem;
+            color: #888;
+        }
 
-        /* Message Bubbles */
         .message-bubble {
             max-width: 85%;
             word-wrap: break-word;
@@ -235,7 +228,6 @@
             opacity: 0.7;
         }
 
-        /* Avatar */
         .avatar {
             width: 36px;
             height: 36px;
@@ -243,7 +235,6 @@
             flex-shrink: 0;
         }
 
-        /* Theme toggle */
         #theme-toggler {
             position: fixed;
             top: 1rem;
@@ -251,26 +242,20 @@
             z-index: 1050;
         }
 
-        /* Input Group */
         .input-group .btn {
             height: 100%;
         }
 
-        /* Ensure button border matches glow container */
         .input-group-glow>.btn {
-            /* border-color: transparent; */
-            /* Optional: remove button border if desired */
             z-index: 2;
-            /* Ensure button is clickable */
         }
 
         .input-group-glow>.btn:focus {
             box-shadow: none;
-            /* Remove focus shadow from button too */
         }
 
 
-        /* Responsive */
+        /* RWD 還要再調整 */
         @media (max-width: 767.98px) {
             #chatBoxContainer {
                 height: calc(100vh - 310px);
@@ -294,8 +279,7 @@
 </head>
 
 <body>
-
-    <!-- Theme Toggle Button -->
+    <!-- Theme Toggle Btn -->
     <button id="theme-toggler" class="btn btn-outline-secondary rounded-circle p-2 lh-1 shadow-sm"
         aria-label="Toggle theme">
         <i class="bi bi-sun-fill"></i>
@@ -332,7 +316,7 @@
                     <!-- Command Suggestions Box -->
                     <div id="commandSuggestions" class="list-group shadow-sm d-none"></div>
 
-                    <!-- Input Group with Glow Container -->
+                    <!-- 輸入框特效 -->
                     <div class="input-group input-group-lg shadow-sm input-group-glow">
                         <input id="userInput" type="text" placeholder="Type message or / for commands..."
                             class="form-control" aria-label="User message input" autocomplete="off">
@@ -356,7 +340,6 @@
         Powered by OpenAI and n8n. <span class="d-none d-lg-inline">| Interface built with Bootstrap.</span>
     </footer>
 
-    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
@@ -374,22 +357,21 @@
 
         // --- Constants & State ---
         const LOCAL_STORAGE_KEY = 'themePreferenceFinAgent';
-        const N8N_WEBHOOK_URL = "https://mingcc.app.n8n.cloud/webhook/ac662654-0156-44d6-ad50-c68e7a7a2355"; // <<< IMPORTANT: REPLACE THIS!
+        const N8N_WEBHOOK_URL = "https://mingcc.app.n8n.cloud/webhook/ac662654-0156-44d6-ad50-c68e7a7a2355";
         const commands = [
             { name: "/clear", description: "Clear the chat history" },
-            { name: "/memory", description: "Check memory/context status (example)" },
-            { name: "/help", description: "Show this list of commands" },
-            { name: "/settings", description: "Adjust AI settings (example)" },
+            { name: "/memory", description: "Let LLM memory this msg (施工中...)" },
+            { name: "/help", description: "Show commands list" },
+            { name: "/settings", description: "Adjust AI settings (施工中...)" },
             { name: "/theme", description: "Toggle light/dark theme" },
         ];
         let selectedSuggestionIndex = -1;
         let blurTimeout;
 
-        // --- Initial Setup ---
+        // --- 版權聲明使用 ---
         currentYearSpan.textContent = new Date().getFullYear();
 
         // --- Theme Management ---
-        // Simplified functions (same logic as before)
         function getPreferredTheme() { return localStorage.getItem(LOCAL_STORAGE_KEY) || 'light'; }
         function applyTheme(theme) {
             htmlElement.setAttribute('data-bs-theme', theme);
@@ -413,7 +395,6 @@
 
 
         // --- Command Suggestion Logic ---
-        // Simplified functions (same logic as before)
         function handleInputCommand() {
             const value = userInput.value;
             if (value.startsWith('/')) {
@@ -455,7 +436,6 @@
         }
 
         // --- Chat Logic ---
-        // Simplified function (same logic as before)
         function handleLocalCommand(command, appendSystemMessage = true) {
             let handled = true;
             switch (command.trim()) {
@@ -483,16 +463,14 @@
                 return;
             }
 
-            // *** POINT 2: Add message THEN clear input ***
             appendMessage("You", message, "user");
             userInput.value = "";
-            // ********************************************
 
             userInput.disabled = true;
             typing.classList.remove("d-none");
             typing.classList.add("d-flex");
 
-            try { // Fetch logic (simplified for brevity)
+            try { // Fetch logic
                 const res = await fetch(N8N_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: message }) });
                 if (!res.ok) { let errorMsg = `HTTP error! Status: ${res.status} ${res.statusText}`; try { const errorData = await res.json(); errorMsg += ` - ${errorData.message || JSON.stringify(errorData)}`; } catch (e) { } throw new Error(errorMsg); }
                 const data = await res.json();
@@ -501,7 +479,7 @@
                     const sanitizedReply = replyText.replace(/</g, "<").replace(/>/g, ">");
                     appendMessage("AI", sanitizedReply, "ai");
                 } else { console.error("AI response format unexpected:", data); appendMessage("System", "⚠️ AI response format error.", "system"); }
-            } catch (err) { // Error handling (simplified for brevity)
+            } catch (err) { // Error handling
                 console.error("Error sending/receiving message:", err); let displayError = "⚠️ Failed to communicate with the AI agent."; if (err.message?.includes("Failed to fetch")) { displayError += " Check network connection or webhook URL."; } else if (err.message) { displayError += ` Details: ${err.message.split('-')[0]}`; } appendMessage("System", displayError, "system");
             } finally {
                 typing.classList.add("d-none"); typing.classList.remove("d-flex");
@@ -509,7 +487,7 @@
             }
         }
 
-        function appendMessage(sender, text, type = "ai") { // Simplified (same logic as before)
+        function appendMessage(sender, text, type = "ai") {
             const messageWrapper = document.createElement("div");
             const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const isUser = type === "user";
@@ -533,7 +511,7 @@
 
         // --- Event Listeners & Initial Actions ---
         userInput.addEventListener('input', handleInputCommand);
-        userInput.addEventListener('keydown', (e) => { // Simplified (same logic as before)
+        userInput.addEventListener('keydown', (e) => {
             const suggestionsVisible = !commandSuggestions.classList.contains('d-none');
             if (suggestionsVisible) {
                 const items = commandSuggestions.querySelectorAll('.list-group-item');
@@ -545,7 +523,7 @@
                         case 'Enter': case 'Tab': if (selectedSuggestionIndex >= 0) { selectSuggestion(items[selectedSuggestionIndex].dataset.command); handled = true; } else { hideSuggestions(); } break;
                         case 'Escape': hideSuggestions(); handled = true; break;
                     }
-                    if (handled) { e.preventDefault(); return; }
+                    if (handled) {e.preventDefault(); return; }
                 }
             }
             if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); sendMessage(); }
@@ -555,7 +533,7 @@
 
         // Initial setup
         userInput.focus();
-        appendMessage("AI", "Hello! How can I assist? Type /help for commands.", "ai");
+        appendMessage("AI", "Hello! How can I assist? Type /help to view commands!", "ai");
         updateScrollbarColors();
 
     </script>
