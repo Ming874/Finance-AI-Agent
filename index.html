@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Analysis AI Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        @keyframes rgb-glow {
+            0% { box-shadow: 0 0 10px 2px #ff0080; }
+            25% { box-shadow: 0 0 10px 2px #ff8c00; }
+            50% { box-shadow: 0 0 10px 2px #40e0d0; }
+            75% { box-shadow: 0 0 10px 2px #8a2be2; }
+            100% { box-shadow: 0 0 10px 2px #ff0080; }
+        }
+
+        .rgb-breathe {
+            animation: rgb-glow 3s infinite;
+        }
+
+        @keyframes dots {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        .typing-dots span {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            margin: 0 2px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: dots 1.4s infinite ease-in-out both;
+        }
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0; }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 min-h-screen">
+    <div class="max-w-2xl mx-auto p-4">
+
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold tracking-tight">Financial Analysis AI Agent</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Talk to your smart agent in real-time</p>
+        </header>
+
+        <!-- 聊天區塊 -->
+        <div id="chatBox" class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 h-96 overflow-y-scroll space-y-4 border border-gray-200 dark:border-gray-700">
+            <!-- Chat msg 插入區 -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typing" class="text-sm text-gray-400 mt-2 hidden flex items-center gap-1">
+            🤖 AI is typing<span class="typing-dots"><span></span><span></span><span></span></span>
+        </div>
+
+        <!-- 輸入區塊 -->
+        <div class="flex mt-4 gap-2 items-center">
+            <input id="userInput" type="text" placeholder="Type your message..."
+                class="flex-1 rounded-lg px-4 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rgb-breathe"
+                onkeydown="checkCtrlEnter(event)">
+            <button onclick="sendMessage()"
+                class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                Send <span class="text-xs block mt-1">Ctrl + Enter</span>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-6 text-xs text-gray-400">
+            © <span id="current-year"></span> Tai Ming Chen. All rights reserved. <br>
+            Powered by OpenAI and n8n.
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();     // 用於版權宣告年分
+
+        const chatBox = document.getElementById("chatBox");
+        const typing = document.getElementById("typing");
+
+        function checkCtrlEnter(e) {
+            if (e.ctrlKey && e.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Show user message
+            appendMessage("You", message, "right");
+            input.value = "";
+
+            typing.classList.remove("hidden");
+
+            try {
+                const res = await fetch("https://n8n-domain/webhook/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await res.json();
+                appendMessage("AI", data.reply, "left");
+            } catch (err) {
+                appendMessage("System", "⚠️ Failed to reach AI. Please try again.", "left");
+            } finally {
+                typing.classList.add("hidden");
+            }
+        }
+
+        function appendMessage(sender, text, align = "left") {
+            const bubble = document.createElement("div");
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            bubble.className = `flex items-start space-x-2 ${align === "right" ? "justify-end" : "justify-start"}`;
+            const avatar = `<div class="w-8 h-8 rounded-full bg-${align === "right" ? "blue" : "gray"}-400 flex items-center justify-center text-white font-bold">${sender[0]}</div>`;
+            const messageBox = `<div class="max-w-xs px-4 py-2 rounded-xl ${align === "right" ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white"}">
+                                    <div class="text-sm font-medium">${sender}</div>
+                                    <div class="text-sm">${text}</div>
+                                    <div class="text-xs text-gray-500 mt-1">${timestamp}</div>
+                                </div>`;
+            bubble.innerHTML = align === "right" ? `${messageBox}${avatar}` : `${avatar}${messageBox}`;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
