@@ -1,146 +1,563 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light"> <!-- Start with light theme, JS will check localStorage -->
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Analysis AI Agent</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Financial Analysis AI Agent (Bootstrap RWD)</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Bootstrap Icons for theme toggle -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        body {
+            background: linear-gradient(to bottom right, var(--bs-body-bg), var(--bs-tertiary-bg));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar (Webkit) */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bs-tertiary-bg);
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb {
             background: #888;
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
 
-        @keyframes rgb-glow {
-            0% { box-shadow: 0 0 10px 2px #ff0080; }
-            25% { box-shadow: 0 0 10px 2px #ff8c00; }
-            50% { box-shadow: 0 0 10px 2px #40e0d0; }
-            75% { box-shadow: 0 0 10px 2px #8a2be2; }
-            100% { box-shadow: 0 0 10px 2px #ff0080; }
+        /* Custom Scrollbar (Firefox) */
+        #chatBoxContainer,
+        #commandSuggestions {
+            scrollbar-width: thin;
         }
 
-        .rgb-breathe {
-            animation: rgb-glow 3s infinite;
-        }
-
+        /* Typing Dots Animation */
         @keyframes dots {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1.0); }
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+
+            40% {
+                transform: scale(1.0);
+                opacity: 1;
+            }
         }
 
         .typing-dots span {
             display: inline-block;
-            width: 5px;
-            height: 5px;
+            width: 6px;
+            height: 6px;
             margin: 0 2px;
-            background: #9ca3af;
+            background: var(--bs-secondary-color);
             border-radius: 50%;
             animation: dots 1.4s infinite ease-in-out both;
         }
-        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-        .typing-dots span:nth-child(3) { animation-delay: 0; }
+
+        .typing-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0;
+        }
+
+        /* RGB Glow Effect */
+        @keyframes rgb-glow {
+            0% {
+                box-shadow: 0 0 9px 3px #ff0080aa;
+            }
+
+            25% {
+                box-shadow: 0 0 9px 3px #ff8c00aa;
+            }
+
+            50% {
+                box-shadow: 0 0 9px 3px #40e0d0aa;
+            }
+
+            75% {
+                box-shadow: 0 0 9px 3px #8a2be2aa;
+            }
+
+            100% {
+                box-shadow: 0 0 9px 3px #ff0080aa;
+            }
+        }
+
+        .input-group-glow {
+            position: relative;
+            border-radius: var(--bs-border-radius-lg);
+            transition: box-shadow 0.3s ease-in-out;
+            z-index: 1;
+        }
+
+        .input-group-glow::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: inherit;
+            animation: rgb-glow 3s ease-in-out infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Input Styling Adjustment */
+        /* Remove default border and shadow from the input inside the glow group */
+        .input-group-glow>.form-control {
+            border: none;
+            box-shadow: none !important;
+            /* Override potential Bootstrap !important */
+            /* The input will automatically take available width due to flex properties of .input-group */
+        }
+
+        /* Remove focus effects specifically from the input, focus is handled by the parent */
+        .input-group-glow>.form-control:focus {
+            box-shadow: none !important;
+            border-color: transparent;
+            /* Prevent border color change on focus */
+            z-index: 3;
+            /* Ensure cursor/text is visible */
+        }
+
+        /* Remove glow animation from pseudo-element when input inside is focused */
+        .input-group-glow:focus-within::before {
+            animation: none;
+            box-shadow: none;
+        }
+
+        /* End Input Styling Adjustment */
+
+
+        /* Utility */
+        .fs-sm {
+            font-size: 0.8rem;
+        }
+
+        /* Chatbox */
+        #chatBoxContainer {
+            height: calc(100vh - 350px);
+            min-height: 300px;
+            max-height: 55vh;
+            overflow-y: auto;
+            background-color: var(--bs-body-tertiary);
+            border-radius: var(--bs-card-border-radius);
+            padding: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        /* Command Suggestions */
+        #inputAreaWrapper {
+            position: relative;
+        }
+
+        #commandSuggestions {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 0.5rem;
+            border-radius: var(--bs-border-radius);
+            background-color: var(--bs-body-bg);
+        }
+
+        #commandSuggestions .list-group-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-color: var(--bs-border-color-translucent);
+        }
+
+        #commandSuggestions .list-group-item small {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            color: var(--bs-secondary-color);
+        }
+
+        #commandSuggestions .list-group-item.active {
+            z-index: 2;
+        }
+
+
+        /* Message Bubbles */
+        .message-bubble {
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .message-bubble.user {
+            background-color: var(--bs-primary);
+            color: var(--bs-primary-bg-subtle);
+            border-bottom-right-radius: 0 !important;
+        }
+
+        .message-bubble.ai,
+        .message-bubble.system {
+            background-color: var(--bs-secondary-bg-subtle);
+            color: var(--bs-emphasis-color);
+            border-bottom-left-radius: 0 !important;
+        }
+
+        .message-bubble .sender {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .message-bubble .timestamp {
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+            opacity: 0.7;
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 36px;
+            height: 36px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Theme toggle */
+        #theme-toggler {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+        }
+
+        /* Input Group */
+        .input-group .btn {
+            height: 100%;
+        }
+
+        /* Ensure button border matches glow container */
+        .input-group-glow>.btn {
+            /* border-color: transparent; */
+            /* Optional: remove button border if desired */
+            z-index: 2;
+            /* Ensure button is clickable */
+        }
+
+        .input-group-glow>.btn:focus {
+            box-shadow: none;
+            /* Remove focus shadow from button too */
+        }
+
+
+        /* Responsive */
+        @media (max-width: 767.98px) {
+            #chatBoxContainer {
+                height: calc(100vh - 310px);
+                max-height: 60vh;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .form-control-lg {
+                font-size: 1rem;
+            }
+
+            .btn-lg {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 min-h-screen">
-    <div class="max-w-2xl mx-auto p-4">
+<body>
 
-        <header class="text-center mb-6">
-            <h1 class="text-4xl font-extrabold tracking-tight">Financial Analysis AI Agent</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Talk to your smart agent in real-time</p>
-        </header>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggler" class="btn btn-outline-secondary rounded-circle p-2 lh-1 shadow-sm"
+        aria-label="Toggle theme">
+        <i class="bi bi-sun-fill"></i>
+    </button>
 
-        <!-- 聊天區塊 -->
-        <div id="chatBox" class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 h-96 overflow-y-scroll space-y-4 border border-gray-200 dark:border-gray-700">
-            <!-- Chat msg 插入區 -->
-        </div>
+    <div class="container mt-5 mb-4 flex-grow-1">
+        <div class="row justify-content-center">
+            <div class="col-xl-7 col-lg-8 col-md-10 col-12">
 
-        <!-- Typing Indicator -->
-        <div id="typing" class="text-sm text-gray-400 mt-2 hidden flex items-center gap-1">
-            🤖 AI is typing<span class="typing-dots"><span></span><span></span><span></span></span>
-        </div>
+                <header class="text-center mb-4">
+                    <h1 class="fw-bold">Financial Analysis AI Agent</h1>
+                    <p class="text-muted lead">Ask me about financial data, trends, or analysis.</p>
+                </header>
 
-        <!-- 輸入區塊 -->
-        <div class="flex mt-4 gap-2 items-center">
-            <input id="userInput" type="text" placeholder="Type your message..."
-                class="flex-1 rounded-lg px-4 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rgb-breathe"
-                onkeydown="checkCtrlEnter(event)">
-            <button onclick="sendMessage()"
-                class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
-                Send <span class="text-xs block mt-1">Ctrl + Enter</span>
-            </button>
-        </div>
+                <!-- Chat Box Container -->
+                <div id="chatBoxContainer" class="shadow-sm mb-3">
+                    <div id="chatBoxContent"></div>
+                </div>
 
-        <!-- Footer -->
-        <footer class="text-center mt-6 text-xs text-gray-400">
-            © <span id="current-year"></span> Tai Ming Chen. All rights reserved. <br>
-            Powered by OpenAI and n8n.
-        </footer>
-    </div>
+                <!-- Typing Indicator -->
+                <div id="typing" class="text-muted fs-sm mb-2 d-none align-items-center ps-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                        class="bi bi-robot me-1" viewBox="0 0 16 16">
+                        <path
+                            d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5M3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.6 26.6 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.93.93 0 0 1-.765.935c-.845.147-2.34.346-4.235.346s-3.39-.2-4.235-.346A.93.93 0 0 1 3 9.219zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a25 25 0 0 1-1.871-.183.25.25 0 0 0-.068.217c.156.417.833.939 2.831.939s2.675-.522 2.831-.939a.25.25 0 0 0-.068-.217 25 25 0 0 1-1.87-.183l-.92-.9a.25.25 0 0 0-.217-.068Z" />
+                        <path
+                            d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1M1 8a7 7 0 0 1 7-7h.07A6.96 6.96 0 0 1 15 8v.07A6.96 6.96 0 0 1 8.07 15H8a7 7 0 0 1-7-7m4-2.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m7 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M5.07 11.965a.5.5 0 0 0 .707.707l1.73-1.73a.5.5 0 0 0-.707-.707l-1.73 1.73Zm5.16 0a.5.5 0 0 1-.707.707l-1.73-1.73a.5.5 0 1 1 .707-.707l1.73 1.73Z" />
+                    </svg>
+                    AI is typing<span class="typing-dots ms-1"><span></span><span></span><span></span></span>
+                </div>
 
+                <!-- Input Area Wrapper -->
+                <div id="inputAreaWrapper">
+                    <!-- Command Suggestions Box -->
+                    <div id="commandSuggestions" class="list-group shadow-sm d-none"></div>
+
+                    <!-- Input Group with Glow Container -->
+                    <div class="input-group input-group-lg shadow-sm input-group-glow">
+                        <input id="userInput" type="text" placeholder="Type message or / for commands..."
+                            class="form-control" aria-label="User message input" autocomplete="off">
+                        <button onclick="sendMessage()" class="btn btn-primary" type="button" aria-label="Send message">
+                            <i class="bi bi-send-fill"></i>
+                            <span class="d-none d-sm-inline ms-1">Send</span>
+                            <small class="opacity-75 d-none d-md-block mt-1"
+                                style="font-size: 0.6rem; line-height: 1;">(Ctrl+Enter)</small>
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- /col -->
+        </div><!-- /row -->
+    </div><!-- /container -->
+
+    <!-- Footer -->
+    <footer class="text-center mt-auto py-3 text-muted fs-sm border-top"
+        style="background-color: var(--bs-tertiary-bg);">
+        © <span id="current-year"></span> Tai Ming Chen. All rights reserved. <br>
+        Powered by OpenAI and n8n. <span class="d-none d-lg-inline">| Interface built with Bootstrap.</span>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
     <script>
-        document.getElementById('current-year').textContent = new Date().getFullYear();     // 用於版權宣告年分
-
-        const chatBox = document.getElementById("chatBox");
+        // --- DOM Elements ---
+        const chatBoxContainer = document.getElementById("chatBoxContainer");
+        const chatBoxContent = document.getElementById("chatBoxContent");
         const typing = document.getElementById("typing");
+        const userInput = document.getElementById("userInput");
+        const htmlElement = document.documentElement;
+        const themeToggler = document.getElementById('theme-toggler');
+        const themeIcon = themeToggler.querySelector('i');
+        const currentYearSpan = document.getElementById('current-year');
+        const commandSuggestions = document.getElementById('commandSuggestions');
 
-        function checkCtrlEnter(e) {
-            if (e.ctrlKey && e.key === "Enter") {
-                sendMessage();
+        // --- Constants & State ---
+        const LOCAL_STORAGE_KEY = 'themePreferenceFinAgent';
+        const N8N_WEBHOOK_URL = "https://mingcc.app.n8n.cloud/webhook/ac662654-0156-44d6-ad50-c68e7a7a2355"; // <<< IMPORTANT: REPLACE THIS!
+        const commands = [
+            { name: "/clear", description: "Clear the chat history" },
+            { name: "/memory", description: "Check memory/context status (example)" },
+            { name: "/help", description: "Show this list of commands" },
+            { name: "/settings", description: "Adjust AI settings (example)" },
+            { name: "/theme", description: "Toggle light/dark theme" },
+        ];
+        let selectedSuggestionIndex = -1;
+        let blurTimeout;
+
+        // --- Initial Setup ---
+        currentYearSpan.textContent = new Date().getFullYear();
+
+        // --- Theme Management ---
+        // Simplified functions (same logic as before)
+        function getPreferredTheme() { return localStorage.getItem(LOCAL_STORAGE_KEY) || 'light'; }
+        function applyTheme(theme) {
+            htmlElement.setAttribute('data-bs-theme', theme);
+            themeIcon.classList.replace(theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill', theme === 'dark' ? 'bi-moon-stars-fill' : 'bi-sun-fill');
+            themeToggler.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
+            updateScrollbarColors();
+        }
+        function setTheme(theme) { applyTheme(theme); localStorage.setItem(LOCAL_STORAGE_KEY, theme); }
+        function updateScrollbarColors() {
+            try {
+                const trackColor = getComputedStyle(chatBoxContainer).getPropertyValue('background-color');
+                const thumbColor = '#888';
+                const scrollbarStyle = `${thumbColor} ${trackColor}`;
+                chatBoxContainer.style.scrollbarColor = scrollbarStyle;
+                commandSuggestions.style.scrollbarColor = scrollbarStyle;
+            } catch (error) { console.warn("Could not update scrollbar colors:", error); }
+        }
+        const initialTheme = getPreferredTheme();
+        applyTheme(initialTheme);
+        themeToggler.addEventListener('click', () => setTheme(htmlElement.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light'));
+
+
+        // --- Command Suggestion Logic ---
+        // Simplified functions (same logic as before)
+        function handleInputCommand() {
+            const value = userInput.value;
+            if (value.startsWith('/')) {
+                const searchTerm = value.substring(1).toLowerCase();
+                const filteredCommands = commands.filter(cmd => cmd.name.substring(1).toLowerCase().startsWith(searchTerm));
+                if (filteredCommands.length > 0) { showSuggestions(filteredCommands); }
+                else { hideSuggestions(); }
+            } else { hideSuggestions(); }
+        }
+        function showSuggestions(filteredCommands) {
+            commandSuggestions.innerHTML = ''; selectedSuggestionIndex = -1;
+            filteredCommands.forEach((cmd) => {
+                const item = document.createElement('a'); item.href = "#";
+                item.classList.add('list-group-item', 'list-group-item-action');
+                item.innerHTML = `<strong>${cmd.name}</strong><br><small>${cmd.description}</small>`;
+                item.dataset.command = cmd.name;
+                item.addEventListener('mousedown', (e) => { e.preventDefault(); selectSuggestion(cmd.name); });
+                item.onclick = (e) => e.preventDefault();
+                commandSuggestions.appendChild(item);
+            });
+            commandSuggestions.classList.remove('d-none'); updateScrollbarColors();
+        }
+        function hideSuggestions() {
+            if (!commandSuggestions.classList.contains('d-none')) {
+                commandSuggestions.classList.add('d-none');
+                commandSuggestions.innerHTML = ''; selectedSuggestionIndex = -1;
             }
+        }
+        function selectSuggestion(commandName) {
+            userInput.value = commandName + ' '; hideSuggestions(); userInput.focus();
+            handleLocalCommand(commandName, false);
+        }
+        function highlightSuggestion(index) {
+            const items = commandSuggestions.querySelectorAll('.list-group-item'); if (items.length === 0) return;
+            items[selectedSuggestionIndex]?.classList.remove('active'); // Null check
+            selectedSuggestionIndex = index;
+            items[selectedSuggestionIndex]?.classList.add('active'); // Null check
+            items[selectedSuggestionIndex]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        // --- Chat Logic ---
+        // Simplified function (same logic as before)
+        function handleLocalCommand(command, appendSystemMessage = true) {
+            let handled = true;
+            switch (command.trim()) {
+                case '/clear': chatBoxContent.innerHTML = ''; if (appendSystemMessage) appendMessage("System", "Chat history cleared.", "system"); break;
+                case '/help': const helpText = commands.map(cmd => `<strong>${cmd.name}</strong>: ${cmd.description}`).join('<br>'); if (appendSystemMessage) appendMessage("System", `Available commands:<br>${helpText}`, "system"); break;
+                case '/theme': const currentTheme = htmlElement.getAttribute('data-bs-theme'); setTheme(currentTheme === 'light' ? 'dark' : 'light'); if (appendSystemMessage) appendMessage("System", `Theme switched to ${currentTheme === 'light' ? 'dark' : 'light'}.`, "system"); break;
+                default: handled = false; break;
+            }
+            return handled;
         }
 
         async function sendMessage() {
-            const input = document.getElementById("userInput");
-            const message = input.value.trim();
+            const message = userInput.value.trim();
             if (!message) return;
 
-            // Show user message
-            appendMessage("You", message, "right");
-            input.value = "";
+            hideSuggestions();
 
-            typing.classList.remove("hidden");
+            if (handleLocalCommand(message)) {
+                userInput.value = ""; // Clear input after local command
+                return;
+            }
 
-            try {
-                const res = await fetch("https://n8n-domain/webhook/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message })
-                });
+            if (N8N_WEBHOOK_URL === "YOUR_N8N_WEBHOOK_URL_HERE") {
+                appendMessage("System", "⚠️ Error: n8n webhook URL not configured.", "system");
+                return;
+            }
 
+            // *** POINT 2: Add message THEN clear input ***
+            appendMessage("You", message, "user");
+            userInput.value = "";
+            // ********************************************
+
+            userInput.disabled = true;
+            typing.classList.remove("d-none");
+            typing.classList.add("d-flex");
+
+            try { // Fetch logic (simplified for brevity)
+                const res = await fetch(N8N_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: message }) });
+                if (!res.ok) { let errorMsg = `HTTP error! Status: ${res.status} ${res.statusText}`; try { const errorData = await res.json(); errorMsg += ` - ${errorData.message || JSON.stringify(errorData)}`; } catch (e) { } throw new Error(errorMsg); }
                 const data = await res.json();
-                appendMessage("AI", data.reply, "left");
-            } catch (err) {
-                appendMessage("System", "⚠️ Failed to reach AI. Please try again.", "left");
+                let replyText = data?.reply || data?.message || (typeof data === 'string' ? data : null);
+                if (replyText !== null) {
+                    const sanitizedReply = replyText.replace(/</g, "<").replace(/>/g, ">");
+                    appendMessage("AI", sanitizedReply, "ai");
+                } else { console.error("AI response format unexpected:", data); appendMessage("System", "⚠️ AI response format error.", "system"); }
+            } catch (err) { // Error handling (simplified for brevity)
+                console.error("Error sending/receiving message:", err); let displayError = "⚠️ Failed to communicate with the AI agent."; if (err.message?.includes("Failed to fetch")) { displayError += " Check network connection or webhook URL."; } else if (err.message) { displayError += ` Details: ${err.message.split('-')[0]}`; } appendMessage("System", displayError, "system");
             } finally {
-                typing.classList.add("hidden");
+                typing.classList.add("d-none"); typing.classList.remove("d-flex");
+                userInput.disabled = false; userInput.focus();
             }
         }
 
-        function appendMessage(sender, text, align = "left") {
-            const bubble = document.createElement("div");
+        function appendMessage(sender, text, type = "ai") { // Simplified (same logic as before)
+            const messageWrapper = document.createElement("div");
             const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            bubble.className = `flex items-start space-x-2 ${align === "right" ? "justify-end" : "justify-start"}`;
-            const avatar = `<div class="w-8 h-8 rounded-full bg-${align === "right" ? "blue" : "gray"}-400 flex items-center justify-center text-white font-bold">${sender[0]}</div>`;
-            const messageBox = `<div class="max-w-xs px-4 py-2 rounded-xl ${align === "right" ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white"}">
-                                    <div class="text-sm font-medium">${sender}</div>
-                                    <div class="text-sm">${text}</div>
-                                    <div class="text-xs text-gray-500 mt-1">${timestamp}</div>
-                                </div>`;
-            bubble.innerHTML = align === "right" ? `${messageBox}${avatar}` : `${avatar}${messageBox}`;
-            chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            const isUser = type === "user";
+            const senderInitial = sender === "System" ? "S" : (sender === "AI" ? "A" : "Y");
+            const avatarBg = isUser ? 'bg-info' : (type === 'system' ? 'bg-warning' : 'bg-secondary');
+            const avatar = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;
+            const bubbleClasses = `p-3 rounded shadow-sm message-bubble ${type}`;
+            const textAlignment = isUser ? 'text-end' : 'text-start';
+            const timeAlignment = isUser ? 'text-end' : 'text-start';
+            let formattedText = text.replace(/\n/g, "<br>");
+            if (isUser) { formattedText = formattedText.replace(/</g, "<").replace(/>/g, ">"); } // Sanitize user text
+            const messageBox = `<div class="${bubbleClasses}"><div class="sender ${textAlignment}">${sender}</div><div class="${textAlignment}">${formattedText}</div><div class="timestamp ${timeAlignment}">${timestamp}</div></div>`;
+            messageWrapper.className = `d-flex align-items-end mb-3 ${isUser ? "justify-content-end" : "justify-content-start"}`;
+            const marginClass = isUser ? 'ms-2' : 'me-2';
+            messageWrapper.innerHTML = isUser ? `<div class="flex-grow-1 d-flex justify-content-end">${messageBox}</div> <div class="${marginClass}">${avatar}</div>` : `<div class="${marginClass}">${avatar}</div> <div class="flex-grow-1">${messageBox}</div>`;
+            chatBoxContent.appendChild(messageWrapper);
+            scrollToBottom();
         }
+
+        function scrollToBottom() { chatBoxContainer.scrollTo({ top: chatBoxContainer.scrollHeight, behavior: 'smooth' }); }
+
+        // --- Event Listeners & Initial Actions ---
+        userInput.addEventListener('input', handleInputCommand);
+        userInput.addEventListener('keydown', (e) => { // Simplified (same logic as before)
+            const suggestionsVisible = !commandSuggestions.classList.contains('d-none');
+            if (suggestionsVisible) {
+                const items = commandSuggestions.querySelectorAll('.list-group-item');
+                if (items.length > 0) {
+                    let handled = false;
+                    switch (e.key) {
+                        case 'ArrowDown': highlightSuggestion((selectedSuggestionIndex + 1) % items.length); handled = true; break;
+                        case 'ArrowUp': highlightSuggestion((selectedSuggestionIndex - 1 + items.length) % items.length); handled = true; break;
+                        case 'Enter': case 'Tab': if (selectedSuggestionIndex >= 0) { selectSuggestion(items[selectedSuggestionIndex].dataset.command); handled = true; } else { hideSuggestions(); } break;
+                        case 'Escape': hideSuggestions(); handled = true; break;
+                    }
+                    if (handled) { e.preventDefault(); return; }
+                }
+            }
+            if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); sendMessage(); }
+        });
+        userInput.addEventListener('blur', () => { blurTimeout = setTimeout(hideSuggestions, 150); });
+        userInput.addEventListener('focus', () => { clearTimeout(blurTimeout); });
+
+        // Initial setup
+        userInput.focus();
+        appendMessage("AI", "Hello! How can I assist? Type /help for commands.", "ai");
+        updateScrollbarColors();
+
     </script>
 </body>
 
