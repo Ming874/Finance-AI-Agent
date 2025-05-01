@@ -407,7 +407,7 @@
             }
         }
         function selectSuggestion(commandName) {
-            userInput.value = commandName + ' ';
+            userInput.value = commandName;
             hideSuggestions();
             userInput.focus();
         }
@@ -423,6 +423,7 @@
         function handleLocalCommand(command) {
             let handled = true;
             const trimmedCommand = command.trim();
+            appendMessage("You", command, "user");
 
             switch (command.trim()) {
                 case '/clear':
