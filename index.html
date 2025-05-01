@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
         body {
             background: linear-gradient(to bottom right, var(--bs-body-bg), var(--bs-tertiary-bg));
@@ -53,6 +54,95 @@
                 opacity: 1;
             }
         }
+
+        /* MARKDOWN*/
+        .message-bubble.ai ul,
+        .message-bubble.ai ol {
+            padding-left: 1.5rem; /* 列表縮排 */
+            margin-bottom: 0.5rem;
+        }
+        .message-bubble.ai li {
+            margin-bottom: 0.25rem; /* 列表項間距 */
+        }
+
+        /* 行內程式碼樣式 */
+        .message-bubble.ai code:not(pre code) {
+            background-color: var(--bs-tertiary-bg);
+            color: var(--bs-emphasis-color);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        /* 程式碼區塊樣式 */
+        .message-bubble.ai pre {
+            background-color: var(--bs-tertiary-bg);
+            color: var(--bs-emphasis-color);
+            padding: 0.75rem;
+            border-radius: var(--bs-border-radius);
+            overflow-x: auto; /* 允許水平捲動 */
+            margin-bottom: 0.5rem;
+            font-size: 0.9em;
+            white-space: pre; /* 保留空白和換行 */
+        }
+
+        /* 程式碼區塊內的 code 標籤樣式重置 */
+        .message-bubble.ai pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: inherit;
+            white-space: inherit;
+        }
+
+        /* 區塊引言樣式 */
+        .message-bubble.ai blockquote {
+            border-left: 3px solid var(--bs-border-color);
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-bottom: 0.5rem;
+            color: var(--bs-secondary-color);
+        }
+
+        .message-bubble.ai h1, .message-bubble.ai h2, .message-bubble.ai h3,
+        .message-bubble.ai h4, .message-bubble.ai h5, .message-bubble.ai h6 {
+            margin-top: 0.8rem;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .message-bubble.ai h1 { font-size: 1.4rem; }
+        .message-bubble.ai h2 { font-size: 1.2rem; }
+        .message-bubble.ai h3 { font-size: 1.1rem; }
+
+        .message-bubble.ai p {
+            margin-bottom: 0.5rem;
+        }
+        .message-bubble.ai p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-bubble.ai table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: var(--bs-emphasis-color);
+            border-color: var(--bs-border-color);
+            border-collapse: collapse;
+        }
+        .message-bubble.ai th,
+        .message-bubble.ai td {
+            padding: 0.5rem 0.5rem;
+            border: 1px solid var(--bs-border-color);
+        }
+        .message-bubble.ai thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid var(--bs-border-color);
+            background-color: var(--bs-tertiary-bg);
+        }
+        .message-bubble.ai tbody tr:nth-of-type(odd) {
+            /* 斑馬紋效果 */
+            background-color: var(--bs-tertiary-bg-rgb, rgba(var(--bs-tertiary-bg-rgb), 0.05));
+        }
+
 
         .typing-dots span {
             display: inline-block;
@@ -326,7 +416,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"
+        integrity="sha512-5g2Nj3mqLOgClHi20oat1COW7jWvf7SyqnvwWUsMDwhjHeqeTl0C+uzjucLweruQxHbhDwiPLXlm8HBO0011pA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    </script>
+
     <script>
+
         // --- DOM Elements ---
         const chatBoxContainer = document.getElementById("chatBoxContainer");
         const chatBoxContent = document.getElementById("chatBoxContent");
@@ -423,20 +520,22 @@
         function handleLocalCommand(command) {
             let handled = true;
             const trimmedCommand = command.trim();
-            appendMessage("You", command, "user");
 
             switch (command.trim()) {
                 case '/clear':
                     chatBoxContent.innerHTML = '';
+                    appendMessage("You", command, "user");
                     appendMessage("System", "Chat history cleared.", "system");
                     break;
                 case '/help':
                     const helpText = commands.map(cmd => `<strong>${cmd.name}</strong>: ${cmd.description}`).join('<br>');
+                    appendMessage("You", command, "user");
                     appendMessage("System", `Available commands:<br>${helpText}`, "system");
                     break;
                 case '/theme':
                     const currentTheme = htmlElement.getAttribute('data-bs-theme'); 
                     setTheme(currentTheme === 'light' ? 'dark' : 'light');
+                    appendMessage("You", command, "user");
                     appendMessage("System", `Theme switched to ${currentTheme === 'light' ? 'dark' : 'light'}.`, "system");
                     break;
                 default:
@@ -474,9 +573,8 @@
                 if (!res.ok) { let errorMsg = `HTTP error! Status: ${res.status} ${res.statusText}`; try { const errorData = await res.json(); errorMsg += ` - ${errorData.message || JSON.stringify(errorData)}`; } catch (e) { } throw new Error(errorMsg); }
                 const data = await res.json();
                 let replyText = data?.reply || data?.message || (typeof data === 'string' ? data : null);
-                if (replyText !== null) {   // 基本的 HTML 清理，防止 AI 回應注入 HTML
-                    const sanitizedReply = replyText.replace(/</g, "<").replace(/>/g, ">");
-                    appendMessage("AI", sanitizedReply, "ai");
+                if (replyText !== null) {
+                    appendMessage("AI", replyText, "ai");
                 } else { console.error("AI response format unexpected:", data); appendMessage("System", "⚠️ AI response format error.", "system"); }
             } catch (err) { // Error handling
                 console.error("Error sending/receiving message:", err);
@@ -502,15 +600,48 @@
             const isUser = type === "user";
             const senderInitial = sender === "System" ? "S" : (sender === "AI" ? "A" : "Y");
             const avatarBg = isUser ? 'bg-info' : (type === 'system' ? 'bg-warning' : 'bg-secondary');
-            const avatar_1 = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;    // 字母頭貼 for User
-            const avatar_2 = `<img src="img.jpg" alt="${sender} Avatar" class="avatar rounded-circle">`;  // 圖片頭貼 for AI Agent
+            const avatar_1 = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;
+            const avatar_2 = `<img src="img.jpg" alt="${sender} Avatar" class="avatar rounded-circle">`;
             const bubbleClasses = `p-3 rounded shadow-sm message-bubble ${type}`;
             const textAlignment = isUser ? 'text-end' : 'text-start';
             const timeAlignment = isUser ? 'text-end' : 'text-start';
-            let formattedText = text.replace(/\n/g, "<br>");
-            if (isUser) {   // Sanitize user text
-                formattedText = formattedText.replace(/</g, "<").replace(/>/g, ">");
+
+            let formattedText;
+
+            // --- 修改開始 ---
+            if (type === 'ai') {
+                // 1. 使用 marked 將 AI 的 Markdown 文本轉換為 HTML
+                //    gfm: true 啟用 GitHub Flavored Markdown (例如表格、刪除線)
+                //    breaks: true 將單個換行符視為 <br> (可選，依需求決定)
+                const rawHtml = marked.parse(text, { gfm: true, breaks: true });
+                // 2. 使用 DOMPurify 清理生成的 HTML 以防止 XSS 攻擊
+                formattedText = DOMPurify.sanitize(rawHtml);
+            } else {
+                // 對於使用者和系統訊息，進行 HTML 特殊字符轉義，並將換行符替換為 <br>
+                formattedText = text.replace(/&/g, '&')
+                                .replace(/</g, '<')
+                                .replace(/>/g, '>')
+                                .replace(/"/g, '"')
+                                .replace(/'/g, "'");
+                // 在轉義完畢後，再處理換行符
+                formattedText = formattedText.replace(/\n/g, "<br>");
             }
+            // const messageWrapper = document.createElement("div");
+            // const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            // const isUser = type === "user";
+            // const senderInitial = sender === "System" ? "S" : (sender === "AI" ? "A" : "Y");
+            // const avatarBg = isUser ? 'bg-info' : (type === 'system' ? 'bg-warning' : 'bg-secondary');
+            // const avatar_1 = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;    // 字母頭貼 for User
+            // const avatar_2 = `<img src="img.jpg" alt="${sender} Avatar" class="avatar rounded-circle">`;  // 圖片頭貼 for AI Agent
+            // const bubbleClasses = `p-3 rounded shadow-sm message-bubble ${type}`;
+            // const textAlignment = isUser ? 'text-end' : 'text-start';
+            // const timeAlignment = isUser ? 'text-end' : 'text-start';
+            // let formattedText = text.replace(/\n/g, "<br>");
+            // if (isUser) {   // Sanitize user text
+            //     formattedText = formattedText.replace(/</g, "<").replace(/>/g, ">");
+            // }
+
+
             const messageBox = `<div class="${bubbleClasses}"><div class="sender ${textAlignment}">${sender}</div><div class="${textAlignment}">${formattedText}</div><div class="timestamp ${timeAlignment}">${timestamp}</div></div>`;
             messageWrapper.className = `d-flex align-items-end mb-3 ${isUser ? "justify-content-end" : "justify-content-start"}`;
             const marginClass = isUser ? 'ms-2' : 'me-2';
@@ -562,7 +693,7 @@
 
         // Initial setup
         userInput.focus();
-        appendMessage("AI", "尚無加入 memory。由於額度有限，請避免一直傳送訊息，最後，可以試試看魔術指令: /help ", "ai");
+        appendMessage("AI", "甚麼問題都可以問 LLM，支援 markdown 格式；記憶功能仍在維護中! 可以試試看魔術指令: /help ", "ai");
         updateScrollbarColors();
 
     </script>
