@@ -1,0 +1,380 @@
+body {
+    background: linear-gradient(to bottom right, var(--bs-body-bg), var(--bs-tertiary-bg));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-tertiary-bg);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Custom Scrollbar (Firefox) */
+#chatBoxContainer,
+#commandSuggestions {
+    scrollbar-width: thin;
+}
+
+/* 輸入中...動畫特效 */
+@keyframes dots {
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1.0);
+        opacity: 1;
+    }
+}
+
+/* MARKDOWN*/
+.message-bubble.ai ul,
+.message-bubble.ai ol {
+    padding-left: 1.5rem; /* 列表縮排 */
+    margin-bottom: 0.5rem;
+}
+.message-bubble.ai li {
+    margin-bottom: 0.25rem; /* 列表項間距 */
+}
+
+/* 行內程式碼樣式 */
+.message-bubble.ai code:not(pre code) {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-emphasis-color);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+/* 程式碼區塊樣式 */
+.message-bubble.ai pre {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-emphasis-color);
+    padding: 0.75rem;
+    border-radius: var(--bs-border-radius);
+    overflow-x: auto; /* 允許水平捲動 */
+    margin-bottom: 0.5rem;
+    font-size: 0.9em;
+    white-space: pre; /* 保留空白和換行 */
+}
+
+/* 程式碼區塊內的 code 標籤樣式重置 */
+.message-bubble.ai pre code {
+    background-color: transparent;
+    padding: 0;
+    font-size: inherit;
+    white-space: inherit;
+}
+
+/* 區塊引言樣式 */
+.message-bubble.ai blockquote {
+    border-left: 3px solid var(--bs-border-color);
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-bottom: 0.5rem;
+    color: var(--bs-secondary-color);
+}
+
+.message-bubble.ai h1, .message-bubble.ai h2, .message-bubble.ai h3,
+.message-bubble.ai h4, .message-bubble.ai h5, .message-bubble.ai h6 {
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+.message-bubble.ai h1 { font-size: 1.4rem; }
+.message-bubble.ai h2 { font-size: 1.2rem; }
+.message-bubble.ai h3 { font-size: 1.1rem; }
+
+.message-bubble.ai p {
+    margin-bottom: 0.5rem;
+}
+.message-bubble.ai p:last-child {
+    margin-bottom: 0;
+}
+
+.message-bubble.ai table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: var(--bs-emphasis-color);
+    border-color: var(--bs-border-color);
+    border-collapse: collapse;
+}
+.message-bubble.ai th,
+.message-bubble.ai td {
+    padding: 0.5rem 0.5rem;
+    border: 1px solid var(--bs-border-color);
+}
+.message-bubble.ai thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid var(--bs-border-color);
+    background-color: var(--bs-tertiary-bg);
+}
+.message-bubble.ai tbody tr:nth-of-type(odd) {
+    /* 斑馬紋效果 */
+    background-color: var(--bs-tertiary-bg-rgb, rgba(var(--bs-tertiary-bg-rgb), 0.05));
+}
+
+
+.typing-dots span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin: 0 2px;
+    background: var(--bs-secondary-color);
+    border-radius: 50%;
+    animation: dots 1.4s infinite ease-in-out both;
+}
+
+.typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0;
+}
+
+@keyframes rgb-glow {
+    0% {
+        box-shadow: 0 0 9px 3px #ff0080aa;
+    }
+
+    25% {
+        box-shadow: 0 0 9px 3px #ff8c00aa;
+    }
+
+    50% {
+        box-shadow: 0 0 9px 3px #40e0d0aa;
+    }
+
+    75% {
+        box-shadow: 0 0 9px 3px #8a2be2aa;
+    }
+
+    100% {
+        box-shadow: 0 0 9px 3px #ff0080aa;
+    }
+}
+
+.input-group-glow {
+    position: relative;
+    border-radius: var(--bs-border-radius-lg);
+    transition: box-shadow 0.3s ease-in-out;
+    z-index: 1;
+}
+
+.input-group-glow::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: inherit;
+    animation: rgb-glow 3s ease-in-out infinite;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.input-group-glow>.form-control {
+    border: none;
+    box-shadow: none !important;
+}
+
+.input-group-glow>.form-control:focus {
+    box-shadow: none !important;
+    border-color: transparent;
+    z-index: 3;
+}
+
+.fs-sm {
+    font-size: 0.8rem;
+}
+
+.input-group.input-group-lg > .form-control:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group.input-group-lg > .btn.btn-primary {
+    border-radius: var(--bs-border-radius-lg);
+    position: relative;
+    z-index: 0;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    border: none;
+}
+
+html[data-bs-theme="light"] .input-group.input-group-lg > .btn.btn-primary {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+html[data-bs-theme="light"] .input-group.input-group-lg > .btn.btn-primary:hover {
+    background-color: #000000;
+    color: #ffffff;
+    z-index: 1;
+}
+
+html[data-bs-theme="dark"] .input-group.input-group-lg > .btn.btn-primary {
+    background-color: #212529;
+    color: #ffffff;
+}
+
+html[data-bs-theme="dark"] .input-group.input-group-lg > .btn.btn-primary:hover {
+    background-color: #ffffff;
+    color: #000000;
+    z-index: 1;
+}
+
+.input-group.input-group-lg > .btn.btn-primary:focus {
+    box-shadow: none;
+    z-index: 1;
+}
+
+#chatBoxContainer {
+    height: calc(100vh - 350px);
+    min-height: 300px;
+    max-height: 55vh;
+    overflow-y: auto;
+    background-color: var(--bs-body-tertiary);
+    border-radius: var(--bs-card-border-radius);
+    padding: 1rem;
+    scroll-behavior: smooth;
+}
+
+#inputAreaWrapper {
+    position: relative;
+}
+
+#commandSuggestions {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 0.5rem;
+    border-radius: var(--bs-border-radius);
+    background-color: var(--bs-body-bg);
+}
+
+#commandSuggestions .list-group-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-color: var(--bs-border-color-translucent);
+}
+
+#commandSuggestions .list-group-item small {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    color: var(--bs-secondary-color);
+}
+
+#commandSuggestions .list-group-item.active {
+    z-index: 2;
+}
+
+#userInput::placeholder {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.message-bubble {
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.message-bubble.user {
+    background-color: var(--bs-primary);
+    color: var(--bs-primary-bg-subtle);
+    border-bottom-right-radius: 0 !important;
+}
+
+.message-bubble.ai,
+.message-bubble.system {
+    background-color: var(--bs-secondary-bg-subtle);
+    color: var(--bs-emphasis-color);
+    border-bottom-left-radius: 0 !important;
+}
+
+.message-bubble .sender {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.message-bubble .timestamp {
+    font-size: 0.75rem;
+    margin-top: 0.3rem;
+    opacity: 0.7;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+#theme-toggler {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050;
+}
+
+.input-group .btn {
+    height: 100%;
+}
+
+.input-group-glow>.btn {
+    z-index: 2;
+}
+
+.input-group-glow>.btn:focus {
+    box-shadow: none;
+}
+
+
+/* RWD 還要再調整 */
+@media (max-width: 767.98px) {
+    #chatBoxContainer {
+        height: calc(100vh - 310px);
+        max-height: 60vh;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    .form-control-lg {
+        font-size: 1rem;
+    }
+
+    .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+}
