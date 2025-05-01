@@ -199,9 +199,9 @@ function appendMessage(sender, text, type = "ai") {
     const messageWrapper = document.createElement("div");
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const isUser = type === "user";
-    const senderInitial = sender === "System" ? "S" : (sender === "AI" ? "A" : "Y");
+    const senderInitial = sender === "System" ? "S" : (sender === "AI" ? "A" : "User");
     const avatarBg = isUser ? 'bg-info' : (type === 'system' ? 'bg-warning' : 'bg-secondary');
-    const avatar_1 = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> "${senderInitial}" </div>`;
+    const avatar_1 = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;
     const avatar_2 = `<img src="img.jpg" alt="${sender} Avatar" class="avatar rounded-circle">`;
     const bubbleClasses = `p-3 rounded shadow-sm message-bubble ${type}`;
     const textAlignment = isUser ? 'text-end' : 'text-start';
