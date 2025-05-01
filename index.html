@@ -442,6 +442,7 @@
                 case '/clear': chatBoxContent.innerHTML = ''; if (appendSystemMessage) appendMessage("System", "Chat history cleared.", "system"); break;
                 case '/help': const helpText = commands.map(cmd => `<strong>${cmd.name}</strong>: ${cmd.description}`).join('<br>'); if (appendSystemMessage) appendMessage("System", `Available commands:<br>${helpText}`, "system"); break;
                 case '/theme': const currentTheme = htmlElement.getAttribute('data-bs-theme'); setTheme(currentTheme === 'light' ? 'dark' : 'light'); if (appendSystemMessage) appendMessage("System", `Theme switched to ${currentTheme === 'light' ? 'dark' : 'light'}.`, "system"); break;
+                case '/setting': case '/theme': break;
                 default: handled = false; break;
             }
             return handled;
@@ -534,7 +535,7 @@
 
         // Initial setup
         userInput.focus();
-        appendMessage("AI", "chatbot_demo_v5 log: 此版已界接LLM，但尚無 memory(會有權限問題)。由於額度有限，請務必不要暴露該網址; 也避免一直傳送訊息，最後，可以試試看魔術指令: /help ", "ai");
+        appendMessage("AI", "此版已界接 LLM，因會有權限問題尚無加入 memory。由於額度有限，請務必不要暴露該網址; 也避免一直傳送訊息，最後，可以試試看魔術指令: /help ", "ai");
         updateScrollbarColors();
 
     </script>
