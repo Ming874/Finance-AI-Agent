@@ -24,7 +24,7 @@ let selectedSuggestionIndex = -1;
 let blurTimeout;
 let userId;
 
-// --- 新增 / 獲取 User ID: 記憶管理 ---
+// --- for 記憶管理 ---
 function getOrCreateUserId() {
     let storedUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
     if (!storedUserId) {
@@ -36,9 +36,8 @@ function getOrCreateUserId() {
     }
     return storedUserId;
 }
-userId = getOrCreateUserId(); // 在腳本加載時獲取或創建 User ID
+userId = getOrCreateUserId();
 
-// --- 版權聲明年分 ---
 currentYearSpan.textContent = new Date().getFullYear();
 
 // --- 亮暗主題切換功能 ---
@@ -69,7 +68,7 @@ applyTheme(initialTheme);
 themeToggler.addEventListener('click', () => setTheme(htmlElement.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light'));
 
 
-// --- 命令提示功能 ---
+// --- Command display ---
 function handleInputCommand() {
     const value = userInput.value;
     if (value.startsWith('/')) {
@@ -111,7 +110,7 @@ function highlightSuggestion(index) {
     items[selectedSuggestionIndex]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
-// --- 聊天控制 ---
+// --- Message Bubble Controls ---
 function handleLocalCommand(command) {
     let handled = true;
 
@@ -276,5 +275,5 @@ userInput.addEventListener('focus', () => { clearTimeout(blurTimeout); });
 
 // Initial setup
 userInput.focus();
-appendMessage("AI", "支援 markdown 格式，可以試試看魔術指令: /help ", "ai");
+appendMessage("AI", "Hi there! My responses support Markdown formatting (like lists, code blocks, etc.). You can also use commands – type /help to get started!", "ai");
 updateScrollbarColors();
