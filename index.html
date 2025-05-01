@@ -231,8 +231,8 @@
         .avatar {
             width: 36px;
             height: 36px;
-            font-size: 1rem;
             flex-shrink: 0;
+            object-fit: cover;
         }
 
         #theme-toggler {
@@ -493,7 +493,8 @@
             const isUser = type === "user";
             const senderInitial = sender === "System" ? "S" : (sender === "AI" ? "A" : "Y");
             const avatarBg = isUser ? 'bg-info' : (type === 'system' ? 'bg-warning' : 'bg-secondary');
-            const avatar = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;
+            // const avatar = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;
+            const avatar = `<img src="img.jpg" alt="${sender} Avatar" class="avatar rounded-circle">`;
             const bubbleClasses = `p-3 rounded shadow-sm message-bubble ${type}`;
             const textAlignment = isUser ? 'text-end' : 'text-start';
             const timeAlignment = isUser ? 'text-end' : 'text-start';
