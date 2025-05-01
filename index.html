@@ -479,6 +479,7 @@
         // --- Constants & State ---
         const LOCAL_STORAGE_KEY = 'themePreferenceFinAgent';
         const N8N_WEBHOOK_URL = "https://mingcc.app.n8n.cloud/webhook/ac662654-0156-44d6-ad50-c68e7a7a2355";
+        const USER_ID_STORAGE_KEY = 'finAgentUserId';
         const commands = [
             { name: "/help", description: "Show commands list" },
             { name: "/clear", description: "Clear the chat history" },
@@ -488,6 +489,23 @@
         ];
         let selectedSuggestionIndex = -1;
         let blurTimeout;
+        let userId;
+
+        // --- 新增：獲取或生成 User ID ---
+        function getOrCreateUserId() {
+            let storedUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
+            if (!storedUserId) {
+                // 如果 localStorage 中沒有 ID，生成一個新的唯一 ID
+                // crypto.randomUUID() 是現代瀏覽器內建的標準方法，用於生成 UUID
+                storedUserId = crypto.randomUUID();
+                localStorage.setItem(USER_ID_STORAGE_KEY, storedUserId);
+                console.log("Generated and saved new User ID:", storedUserId);
+            } else {
+                console.log("Retrieved existing User ID:", storedUserId);
+            }
+            return storedUserId;
+        }
+        userId = getOrCreateUserId(); // 在腳本加載時獲取或創建 User ID
 
         // --- 版權聲明使用 ---
         currentYearSpan.textContent = new Date().getFullYear();
@@ -610,7 +628,7 @@
             typing.classList.add("d-flex");
 
             try { // Fetch logic
-                const res = await fetch(N8N_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: message }) });
+                const res = await fetch(N8N_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: message, userId: userId}) });
                 if (!res.ok) { let errorMsg = `HTTP error! Status: ${res.status} ${res.statusText}`; try { const errorData = await res.json(); errorMsg += ` - ${errorData.message || JSON.stringify(errorData)}`; } catch (e) { } throw new Error(errorMsg); }
                 const data = await res.json();
                 let replyText = data?.reply || data?.message || (typeof data === 'string' ? data : null);
