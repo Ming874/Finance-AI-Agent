@@ -223,6 +223,47 @@
             font-size: 0.8rem;
         }
 
+        .input-group.input-group-lg > .form-control:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group.input-group-lg > .btn.btn-primary {
+            border-radius: var(--bs-border-radius-lg);
+            position: relative;
+            z-index: 0;
+            transition: background-color 0.3s ease-in-out,
+                        color 0.3s ease-in-out;
+            border: none;
+        }
+
+        html[data-bs-theme="light"] .input-group.input-group-lg > .btn.btn-primary {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        html[data-bs-theme="light"] .input-group.input-group-lg > .btn.btn-primary:hover {
+            background-color: #000000;
+            color: #ffffff;
+            z-index: 1;
+        }
+
+        html[data-bs-theme="dark"] .input-group.input-group-lg > .btn.btn-primary {
+            background-color: #212529;
+            color: #ffffff;
+        }
+
+        html[data-bs-theme="dark"] .input-group.input-group-lg > .btn.btn-primary:hover {
+            background-color: #ffffff;
+            color: #000000;
+            z-index: 1;
+        }
+
+        .input-group.input-group-lg > .btn.btn-primary:focus {
+            box-shadow: none;
+            z-index: 1;
+        }
+
         #chatBoxContainer {
             height: calc(100vh - 350px);
             min-height: 300px;
@@ -398,7 +439,7 @@
                             <i class="bi bi-send-fill"></i>
                             <span class="d-none d-sm-inline ms-1">Send</span>
                             <small class="opacity-75 d-none d-md-block mt-1"
-                                style="font-size: 0.6rem; line-height: 1;">(Ctrl+Enter)</small>
+                                style="font-size: 0.8rem; line-height: 1;">(Ctrl+Enter)</small>
                         </button>
                     </div>
                 </div>
@@ -693,7 +734,7 @@
 
         // Initial setup
         userInput.focus();
-        appendMessage("AI", "甚麼問題都可以問 LLM，支援 markdown 格式；記憶功能仍在維護中! 可以試試看魔術指令: /help ", "ai");
+        appendMessage("AI", "支援 markdown 格式，可以試試看魔術指令: /help ", "ai");
         updateScrollbarColors();
 
     </script>
