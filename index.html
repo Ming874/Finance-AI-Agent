@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light"> <!-- Start with light theme -->
+<html lang="en" data-bs-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Analysis AI Agent</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <!-- Bootstrap Icons for theme toggle -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         body {
@@ -42,7 +40,7 @@
             scrollbar-width: thin;
         }
 
-        /* Typing Dots Animation */
+        /* 輸入中...動畫特效 */
         @keyframes dots {
             0%,
             80%,
@@ -120,30 +118,17 @@
             pointer-events: none;
         }
 
-        /* Input Styling Adjustment */
-        /* Remove default border and shadow from the input inside the glow group */
         .input-group-glow>.form-control {
             border: none;
             box-shadow: none !important;
-            /* Override potential Bootstrap !important */
-            /* The input will automatically take available width due to flex properties of .input-group */
         }
 
-        /* Remove focus effects specifically from the input, focus is handled by the parent */
         .input-group-glow>.form-control:focus {
             box-shadow: none !important;
             border-color: transparent;
-            /* Prevent border color change on focus */
             z-index: 3;
-            /* Ensure cursor/text is visible */
         }
 
-        /* Remove glow animation from pseudo-element when input inside is focused */
-        .input-group-glow:focus-within::before {
-            animation: none;
-            box-shadow: none;
-        }
-        
         .fs-sm {
             font-size: 0.8rem;
         }
@@ -313,10 +298,9 @@
 
                 <!-- Input Area Wrapper -->
                 <div id="inputAreaWrapper">
-                    <!-- Command Suggestions Box -->
+                    <!-- cmd Suggestions Box -->
                     <div id="commandSuggestions" class="list-group shadow-sm d-none"></div>
 
-                    <!-- 輸入框特效 -->
                     <div class="input-group input-group-lg shadow-sm input-group-glow">
                         <input id="userInput" type="text" placeholder="Type message or / for commands..."
                             class="form-control" aria-label="User message input" autocomplete="off">
@@ -328,10 +312,9 @@
                         </button>
                     </div>
                 </div>
-
-            </div><!-- /col -->
-        </div><!-- /row -->
-    </div><!-- /container -->
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="text-center mt-auto py-3 text-muted fs-sm border-top"
@@ -359,11 +342,11 @@
         const LOCAL_STORAGE_KEY = 'themePreferenceFinAgent';
         const N8N_WEBHOOK_URL = "https://mingcc.app.n8n.cloud/webhook/ac662654-0156-44d6-ad50-c68e7a7a2355";
         const commands = [
-            { name: "/clear", description: "Clear the chat history" },
-            { name: "/memory", description: "Let LLM memory this msg (施工中...)" },
             { name: "/help", description: "Show commands list" },
-            { name: "/settings", description: "Adjust AI settings (施工中...)" },
+            { name: "/clear", description: "Clear the chat history" },
             { name: "/theme", description: "Toggle light/dark theme" },
+            { name: "/memory", description: "Let LLM memory this msg (施工中...)" },
+            { name: "/settings", description: "Adjust AI settings (施工中...)" },
         ];
         let selectedSuggestionIndex = -1;
         let blurTimeout;
@@ -424,8 +407,9 @@
             }
         }
         function selectSuggestion(commandName) {
-            userInput.value = commandName + ' '; hideSuggestions(); userInput.focus();
-            handleLocalCommand(commandName, false);
+            userInput.value = commandName + ' ';
+            hideSuggestions();
+            userInput.focus();
         }
         function highlightSuggestion(index) {
             const items = commandSuggestions.querySelectorAll('.list-group-item'); if (items.length === 0) return;
@@ -436,14 +420,27 @@
         }
 
         // --- Chat Logic ---
-        function handleLocalCommand(command, appendSystemMessage = true) {
+        function handleLocalCommand(command) {
             let handled = true;
+            const trimmedCommand = command.trim();
+
             switch (command.trim()) {
-                case '/clear': chatBoxContent.innerHTML = ''; if (appendSystemMessage) appendMessage("System", "Chat history cleared.", "system"); break;
-                case '/help': const helpText = commands.map(cmd => `<strong>${cmd.name}</strong>: ${cmd.description}`).join('<br>'); if (appendSystemMessage) appendMessage("System", `Available commands:<br>${helpText}`, "system"); break;
-                case '/theme': const currentTheme = htmlElement.getAttribute('data-bs-theme'); setTheme(currentTheme === 'light' ? 'dark' : 'light'); if (appendSystemMessage) appendMessage("System", `Theme switched to ${currentTheme === 'light' ? 'dark' : 'light'}.`, "system"); break;
-                case '/setting': case '/theme': break;
-                default: handled = false; break;
+                case '/clear':
+                    chatBoxContent.innerHTML = '';
+                    appendMessage("System", "Chat history cleared.", "system");
+                    break;
+                case '/help':
+                    const helpText = commands.map(cmd => `<strong>${cmd.name}</strong>: ${cmd.description}`).join('<br>');
+                    appendMessage("System", `Available commands:<br>${helpText}`, "system");
+                    break;
+                case '/theme':
+                    const currentTheme = htmlElement.getAttribute('data-bs-theme'); 
+                    setTheme(currentTheme === 'light' ? 'dark' : 'light');
+                    appendMessage("System", `Theme switched to ${currentTheme === 'light' ? 'dark' : 'light'}.`, "system");
+                    break;
+                default:
+                    handled = false;
+                    break;
             }
             return handled;
         }
@@ -455,7 +452,7 @@
             hideSuggestions();
 
             if (handleLocalCommand(message)) {
-                userInput.value = ""; // Clear input after local command
+                userInput.value = "";
                 return;
             }
 
@@ -476,15 +473,25 @@
                 if (!res.ok) { let errorMsg = `HTTP error! Status: ${res.status} ${res.statusText}`; try { const errorData = await res.json(); errorMsg += ` - ${errorData.message || JSON.stringify(errorData)}`; } catch (e) { } throw new Error(errorMsg); }
                 const data = await res.json();
                 let replyText = data?.reply || data?.message || (typeof data === 'string' ? data : null);
-                if (replyText !== null) {
+                if (replyText !== null) {   // 基本的 HTML 清理，防止 AI 回應注入 HTML
                     const sanitizedReply = replyText.replace(/</g, "<").replace(/>/g, ">");
                     appendMessage("AI", sanitizedReply, "ai");
                 } else { console.error("AI response format unexpected:", data); appendMessage("System", "⚠️ AI response format error.", "system"); }
             } catch (err) { // Error handling
-                console.error("Error sending/receiving message:", err); let displayError = "⚠️ Failed to communicate with the AI agent."; if (err.message?.includes("Failed to fetch")) { displayError += " Check network connection or webhook URL."; } else if (err.message) { displayError += ` Details: ${err.message.split('-')[0]}`; } appendMessage("System", displayError, "system");
+                console.error("Error sending/receiving message:", err);
+                let displayError = "⚠️ Failed to communicate with the AI agent.";
+                if (err.message?.includes("Failed to fetch")) {
+                    displayError += " Check network connection or webhook URL.";
+                }
+                else if (err.message) {
+                    displayError += ` Details: ${err.message.split('-')[0]}`;
+                }
+                appendMessage("System", displayError, "system");
             } finally {
-                typing.classList.add("d-none"); typing.classList.remove("d-flex");
-                userInput.disabled = false; userInput.focus();
+                typing.classList.add("d-none");
+                typing.classList.remove("d-flex");
+                userInput.disabled = false;
+                userInput.focus();
             }
         }
 
@@ -494,17 +501,19 @@
             const isUser = type === "user";
             const senderInitial = sender === "System" ? "S" : (sender === "AI" ? "A" : "Y");
             const avatarBg = isUser ? 'bg-info' : (type === 'system' ? 'bg-warning' : 'bg-secondary');
-            // const avatar = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;
-            const avatar = `<img src="img.jpg" alt="${sender} Avatar" class="avatar rounded-circle">`;
+            const avatar_1 = `<div class="avatar ${avatarBg} text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"> ${senderInitial} </div>`;    // 字母頭貼 for User
+            const avatar_2 = `<img src="img.jpg" alt="${sender} Avatar" class="avatar rounded-circle">`;  // 圖片頭貼 for AI Agent
             const bubbleClasses = `p-3 rounded shadow-sm message-bubble ${type}`;
             const textAlignment = isUser ? 'text-end' : 'text-start';
             const timeAlignment = isUser ? 'text-end' : 'text-start';
             let formattedText = text.replace(/\n/g, "<br>");
-            if (isUser) { formattedText = formattedText.replace(/</g, "<").replace(/>/g, ">"); } // Sanitize user text
+            if (isUser) {   // Sanitize user text
+                formattedText = formattedText.replace(/</g, "<").replace(/>/g, ">");
+            }
             const messageBox = `<div class="${bubbleClasses}"><div class="sender ${textAlignment}">${sender}</div><div class="${textAlignment}">${formattedText}</div><div class="timestamp ${timeAlignment}">${timestamp}</div></div>`;
             messageWrapper.className = `d-flex align-items-end mb-3 ${isUser ? "justify-content-end" : "justify-content-start"}`;
             const marginClass = isUser ? 'ms-2' : 'me-2';
-            messageWrapper.innerHTML = isUser ? `<div class="flex-grow-1 d-flex justify-content-end">${messageBox}</div> <div class="${marginClass}">${avatar}</div>` : `<div class="${marginClass}">${avatar}</div> <div class="flex-grow-1">${messageBox}</div>`;
+            messageWrapper.innerHTML = isUser ? `<div class="flex-grow-1 d-flex justify-content-end">${messageBox}</div> <div class="${marginClass}">${avatar_1}</div>` : `<div class="${marginClass}">${avatar_2}</div> <div class="flex-grow-1">${messageBox}</div>`;
             chatBoxContent.appendChild(messageWrapper);
             scrollToBottom();
         }
@@ -520,10 +529,27 @@
                 if (items.length > 0) {
                     let handled = false;
                     switch (e.key) {
-                        case 'ArrowDown': highlightSuggestion((selectedSuggestionIndex + 1) % items.length); handled = true; break;
-                        case 'ArrowUp': highlightSuggestion((selectedSuggestionIndex - 1 + items.length) % items.length); handled = true; break;
-                        case 'Enter': case 'Tab': if (selectedSuggestionIndex >= 0) { selectSuggestion(items[selectedSuggestionIndex].dataset.command); handled = true; } else { hideSuggestions(); } break;
-                        case 'Escape': hideSuggestions(); handled = true; break;
+                        case 'ArrowDown': highlightSuggestion((selectedSuggestionIndex + 1) % items.length);
+                            handled = true;
+                            break;
+                        case 'ArrowUp':
+                            highlightSuggestion((selectedSuggestionIndex - 1 + items.length) % items.length);
+                            handled = true;
+                            break;
+                        case 'Enter':
+                        case 'Tab':
+                            if (selectedSuggestionIndex >= 0) {
+                                selectSuggestion(items[selectedSuggestionIndex].dataset.command);
+                                handled = true;
+                            }
+                            else {
+                                hideSuggestions();
+                            }
+                            break;
+                        case 'Escape':
+                            hideSuggestions();
+                            handled = true;
+                            break;
                     }
                     if (handled) {e.preventDefault(); return; }
                 }
@@ -535,7 +561,7 @@
 
         // Initial setup
         userInput.focus();
-        appendMessage("AI", "此版已界接 LLM，因會有權限問題尚無加入 memory。由於額度有限，請務必不要暴露該網址; 也避免一直傳送訊息，最後，可以試試看魔術指令: /help ", "ai");
+        appendMessage("AI", "因有 id 設置問題尚無加入 memory。由於額度有限，請勿暴露該網址; 也避免一直傳送訊息，最後，可以試試看魔術指令: /help ", "ai");
         updateScrollbarColors();
 
     </script>
