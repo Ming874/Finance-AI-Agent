@@ -11,7 +11,7 @@ const commandSuggestions = document.getElementById('commandSuggestions');
 
 // --- Constants & State ---
 const LOCAL_STORAGE_KEY = 'themePreferenceFinAgent';
-const N8N_WEBHOOK_URL = "https://mingcc.app.n8n.cloud/webhook/ac662654-0156-44d6-ad50-c68e7a7a2355";
+const N8N_WEBHOOK_URL = "https://mingdg.app.n8n.cloud/webhook/ac662654-0156-44d6-ad50-c68e7a7a2355";
 const USER_ID_STORAGE_KEY = 'finAgentUserId';
 const commands = [
     { name: "/help", description: "Show commands list" },
